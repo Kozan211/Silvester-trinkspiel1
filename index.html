@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Silvester Trinkspiel</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background: linear-gradient(to bottom, #222, #555);
+            color: white;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+        }
+        h1 {
+            font-size: 5rem;
+            color: orange;
+        }
+        .container {
+            text-align: center;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        .btn {
+            background-color: orange;
+            color: black;
+            font-size: 1.5rem;
+            padding: 10px 20px;
+            margin: 10px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        .btn:hover {
+            background-color: darkorange;
+        }
+        .hidden {
+            display: none;
+        }
+        .question {
+            margin: 20px 0;
+            font-size: 1.5rem;
+        }
+        .team-info {
+            margin: 20px 0;
+            font-size: 1.2rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Silvester Trinkspiel</h1>
+        <div id="start-screen">
+            <button class="btn" onclick="startGame()">Spiel starten</button>
+        </div>
+
+        <div id="team-selection" class="hidden">
+            <h2>Teams erstellen</h2>
+            <input type="text" id="player-name" placeholder="Spielername" />
+            <select id="team">
+                <option value="Team 1">Team 1</option>
+                <option value="Team 2">Team 2</option>
+                <option value="Team 3">Team 3</option>
+                <option value="Team 4">Team 4</option>
+            </select>
+            <button class="btn" onclick="addPlayer()">Hinzufügen</button>
+            <button class="btn" onclick="startQuestions()">Weiter</button>
+            <div id="players-list"></div>
+        </div>
+
+        <div id="question-screen" class="hidden">
+            <div id="team-info" class="team-info"></div>
+            <div id="question" class="question"></div>
+            <button class="btn" onclick="showAnswer()">Lösung anzeigen</button>
+            <button class="btn" onclick="answerCorrect()">Richtig</button>
+            <button class="btn" onclick="answerWrong()">Falsch</button>
+        </div>
+    </div>
+
+    <script>
+        const players = [];
+        const teams = {};
+        let currentPlayerIndex = 0;
+        let questions = [
+            { category: "Quiz", question: "Wie viele Spieler stehen gleichzeitig pro Team bei einem Fußballspiel auf dem Platz?", answer: "11" },
+            { category: "Quiz", question: "Was ist die chemische Formel für Wasser?", answer: "H2O" },
+            { category: "Aufgabe", question: "Trinke ein Glas Wasser!", answer: "N/A" }
+        ];
+
+        function startGame() {
+            document.getElementById('start-screen').classList.add('hidden');
+            document.getElementById('team-selection').classList.remove('hidden');
+        }
+
+        function addPlayer() {
+            const playerName = document.getElementById('player-name').value;
+            const teamName = document.getElementById('team').value;
+
+            if (playerName.trim() === "") {
+                alert("Bitte einen Spielernamen eingeben.");
+                return;
+            }
+
+            players.push({ name: playerName, team: teamName, points: 0 });
+            if (!teams[teamName]) {
+                teams[teamName] = 0;
+            }
+
+            const playerList = document.getElementById('players-list');
+            const playerEntry = document.createElement('div');
+            playerEntry.textContent = `${playerName} (${teamName})`;
+            playerList.appendChild(playerEntry);
+
+            document.getElementById('player-name').value = "";
+        }
+
+        function startQuestions() {
+            if (players.length === 0) {
+                alert("Bitte mindestens einen Spieler hinzufügen.");
+                return;
+            }
+
+            document.getElementById('team-selection').classList.add('hidden');
+            document.getElementById('question-screen').classList.remove('hidden');
+            loadQuestion();
+        }
+
+        function loadQuestion() {
+            const question = questions[Math.floor(Math.random() * questions.length)];
+            document.getElementById('question').textContent = `Frage: ${question.question}`;
+            document.getElementById('question').dataset.answer = question.answer;
+
+            const teamInfo = document.getElementById('team-info');
+            teamInfo.innerHTML = '';
+            for (const team in teams) {
+                teamInfo.innerHTML += `<div>${team}: ${teams[team]} Punkte</div>`;
+            }
+
+            const currentPlayer = players[currentPlayerIndex];
+            teamInfo.innerHTML += `<div>Spieler: ${currentPlayer.name} (${currentPlayer.team}) ist dran</div>`;
+        }
+
+        function showAnswer() {
+            const answer = document.getElementById('question').dataset.answer;
+            alert(`Lösung: ${answer}`);
+        }
+
+        function answerCorrect() {
+            const currentPlayer = players[currentPlayerIndex];
+            currentPlayer.points += 50;
+            teams[currentPlayer.team] += 50;
+            nextPlayer();
+        }
+
+        function answerWrong() {
+            const currentPlayer = players[currentPlayerIndex];
+            currentPlayer.points -= 50;
+            teams[currentPlayer.team] -= 50;
+            nextPlayer();
+        }
+
+        function nextPlayer() {
+            currentPlayerIndex = (currentPlayerIndex + 1) % players.length;
+            loadQuestion();
+        }
+    </script>
+</body>
+</html>
